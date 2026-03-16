@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { motion } from 'framer-motion'
 import { Maximize2 } from 'lucide-react'
 import { InlineEditor } from '../editor/InlineEditor.tsx'
 
@@ -11,8 +10,6 @@ interface WeeklyViewProps {
   date: Date
   direction: number
   onOpenDay: (date: Date, direction: number) => void
-  notesByDate: Record<string, string[]>
-  onNotesChange: (isoDate: string, notes: string[]) => void
   linesByDate: Record<string, string[]>
   focusByDate: Record<string, string>
   onLinesChange: (isoDate: string, lines: string[]) => void
@@ -23,8 +20,6 @@ export const WeeklyView = ({
   date,
   direction,
   onOpenDay,
-  notesByDate,
-  onNotesChange,
   linesByDate,
   focusByDate,
   onLinesChange,
@@ -36,16 +31,17 @@ export const WeeklyView = ({
 
   const [weekFocus, setWeekFocus] = useState('')
   const [weekSummary, setWeekSummary] = useState('')
+  const emptyLines = useMemo(() => new Array(20).fill(''), [])
 
   const ensureDayState = (d: Date) => {
     const key = toISODate(d)
-    if (!linesByDate[key]) onLinesChange(key, new Array(20).fill(''))
+    if (!linesByDate[key]) onLinesChange(key, emptyLines.slice())
     if (!(key in focusByDate)) onFocusChange(key, '')
   }
 
   const updateLine = (d: Date, idx: number, value: string) => {
     const key = toISODate(d)
-    const lines = linesByDate[key] ?? new Array(20).fill('')
+    const lines = linesByDate[key] ?? emptyLines
     const next = [...lines]
     next[idx] = value
     onLinesChange(key, next)
@@ -60,22 +56,26 @@ export const WeeklyView = ({
 
   const openLeft = (d: Date) => onOpenDay(d, direction === 0 ? 1 : direction)
   const openRight = (d: Date) => onOpenDay(d, direction === 0 ? -1 : direction)
-  const getNotes = (d: Date) => notesByDate[toISODate(d)] ?? ['']
-  const getLines = (d: Date) => linesByDate[toISODate(d)] ?? new Array(20).fill('')
+  const getLines = (d: Date) => linesByDate[toISODate(d)] ?? emptyLines
   const getFocus = (d: Date) => focusByDate[toISODate(d)] ?? ''
 
   return (
     <div className="w-full">
       <div className="weekly-spread weekly-spread--fixed">
         <div className="weekly-page weekly-page--left">
+          <WeekStrip
+            label="Фокус недели:"
+            value={weekFocus}
+            onChange={setWeekFocus}
+            placeholder="главное на этой неделе…"
+          />
           <DayCard
             date={mon}
             selected={isSameDay(mon, date)}
             isToday={isSameDay(mon, today)}
             lines={getLines(mon)}
             focus={getFocus(mon)}
-            noteCount={Math.max(0, getNotes(mon).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(mon), [...getNotes(mon), ''])}
+            isoDate={toISODate(mon)}
             onEnsure={() => ensureDayState(mon)}
             onLineChange={(idx, v) => updateLine(mon, idx, v)}
             onFocusChange={(v) => updateFocus(mon, v)}
@@ -88,8 +88,7 @@ export const WeeklyView = ({
             isToday={isSameDay(tue, today)}
             lines={getLines(tue)}
             focus={getFocus(tue)}
-            noteCount={Math.max(0, getNotes(tue).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(tue), [...getNotes(tue), ''])}
+            isoDate={toISODate(tue)}
             onEnsure={() => ensureDayState(tue)}
             onLineChange={(idx, v) => updateLine(tue, idx, v)}
             onFocusChange={(v) => updateFocus(tue, v)}
@@ -102,26 +101,17 @@ export const WeeklyView = ({
             isToday={isSameDay(wed, today)}
             lines={getLines(wed)}
             focus={getFocus(wed)}
-            noteCount={Math.max(0, getNotes(wed).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(wed), [...getNotes(wed), ''])}
+            isoDate={toISODate(wed)}
             onEnsure={() => ensureDayState(wed)}
             onLineChange={(idx, v) => updateLine(wed, idx, v)}
             onFocusChange={(v) => updateFocus(wed, v)}
             onOpen={() => openLeft(wed)}
             tabSide="left"
           />
-
-          <WeekNote
-            label="Фокус недели:"
-            value={weekFocus}
-            onChange={setWeekFocus}
-            placeholder="прод сервис, менеджмент, IDE…"
-          />
         </div>
 
         <div className="weekly-spiral" aria-hidden="true">
           <div className="weekly-spiral__inner" />
-          <div className="weekly-spiral__title">СЕВСТАР ПЛАНЕР</div>
         </div>
 
         <div className="weekly-page weekly-page--right">
@@ -131,8 +121,7 @@ export const WeeklyView = ({
             isToday={isSameDay(thu, today)}
             lines={getLines(thu)}
             focus={getFocus(thu)}
-            noteCount={Math.max(0, getNotes(thu).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(thu), [...getNotes(thu), ''])}
+            isoDate={toISODate(thu)}
             onEnsure={() => ensureDayState(thu)}
             onLineChange={(idx, v) => updateLine(thu, idx, v)}
             onFocusChange={(v) => updateFocus(thu, v)}
@@ -145,8 +134,7 @@ export const WeeklyView = ({
             isToday={isSameDay(fri, today)}
             lines={getLines(fri)}
             focus={getFocus(fri)}
-            noteCount={Math.max(0, getNotes(fri).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(fri), [...getNotes(fri), ''])}
+            isoDate={toISODate(fri)}
             onEnsure={() => ensureDayState(fri)}
             onLineChange={(idx, v) => updateLine(fri, idx, v)}
             onFocusChange={(v) => updateFocus(fri, v)}
@@ -159,8 +147,7 @@ export const WeeklyView = ({
             isToday={isSameDay(sat, today)}
             lines={getLines(sat)}
             focus={getFocus(sat)}
-            noteCount={Math.max(0, getNotes(sat).filter((n) => n.trim().length > 0).length)}
-            onAddNote={() => onNotesChange(toISODate(sat), [...getNotes(sat), ''])}
+            isoDate={toISODate(sat)}
             onEnsure={() => ensureDayState(sat)}
             onLineChange={(idx, v) => updateLine(sat, idx, v)}
             onFocusChange={(v) => updateFocus(sat, v)}
@@ -168,13 +155,25 @@ export const WeeklyView = ({
             tabSide="right"
           />
 
-          <WeekSummary
+          <DayCard
             date={sun}
             selected={isSameDay(sun, date)}
             isToday={isSameDay(sun, today)}
+            lines={getLines(sun)}
+            focus={getFocus(sun)}
+            isoDate={toISODate(sun)}
+            onEnsure={() => ensureDayState(sun)}
+            onLineChange={(idx, v) => updateLine(sun, idx, v)}
+            onFocusChange={(v) => updateFocus(sun, v)}
+            onOpen={() => openRight(sun)}
+            tabSide="right"
+          />
+          <WeekStrip
+            label="Итоги недели:"
             value={weekSummary}
             onChange={setWeekSummary}
-            onOpen={() => openRight(sun)}
+            placeholder="коротко по итогам…"
+            variant="summary"
           />
         </div>
       </div>
@@ -188,8 +187,7 @@ interface DayCardProps {
   isToday: boolean
   focus: string
   lines: string[]
-  noteCount: number
-  onAddNote: () => void
+  isoDate: string
   tabSide: 'left' | 'right'
   onEnsure: () => void
   onFocusChange: (value: string) => void
@@ -203,8 +201,7 @@ const DayCard = ({
   isToday,
   focus,
   lines,
-  noteCount,
-  onAddNote,
+  isoDate,
   tabSide,
   onEnsure,
   onFocusChange,
@@ -215,7 +212,7 @@ const DayCard = ({
   const day = format(date, 'd')
 
   return (
-    <div className={`day-slot day-slot--${tabSide}`}>
+    <div className={`day-slot day-slot--${tabSide}`} data-week-iso={isoDate}>
       <button
         type="button"
         onClick={() => {
@@ -231,30 +228,17 @@ const DayCard = ({
         <Maximize2 size={14} className="day-tab__icon" />
       </button>
 
-      <motion.div layout className={`day-card ${selected ? 'day-card--active' : ''}`} onPointerDown={onEnsure}>
+      <div className={`day-card ${selected ? 'day-card--active' : ''}`} onPointerDown={onEnsure}>
         <div className="day-card__header">
           <div className="day-card__headerRow">
             <div className="day-card__title">Фокус дня:</div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onAddNote()
-              }}
-              className="day-card__noteBtn"
-              aria-label="Добавить заметку"
-            >
-              <span className="day-card__notePlus">+</span>
-              {noteCount > 0 && <span className="day-card__noteCount">{noteCount}</span>}
-            </button>
+            <input
+              value={focus}
+              onChange={(e) => onFocusChange(e.target.value)}
+              className="day-card__focus day-card__focus--inline"
+              placeholder="главное…"
+            />
           </div>
-          <input
-            value={focus}
-            onChange={(e) => onFocusChange(e.target.value)}
-            className="day-card__focus"
-            placeholder="главное на сегодня…"
-          />
         </div>
 
         <div className="day-card__lines">
@@ -263,78 +247,41 @@ const DayCard = ({
               <InlineEditor
                 content={lines[idx] ?? ''}
                 onChange={(html) => onLineChange(idx, html)}
+                navId={`week-${isoDate}`}
+                navIndex={idx}
+                showToolbar={false}
+                mode="minimal"
               />
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
 
-const WeekNote = ({
+const WeekStrip = ({
   label,
   value,
   onChange,
   placeholder,
+  variant,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder: string
+  variant?: 'summary'
 }) => {
   return (
-    <div className="week-note">
-      <div className="week-note__label">{label}</div>
-      <input value={value} onChange={(e) => onChange(e.target.value)} className="week-note__input" placeholder={placeholder} />
-      <div className="week-note__lines">
-        {Array.from({ length: 20 }, (_, idx) => (
-          <div key={idx} className="week-note__line" />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const WeekSummary = ({
-  date,
-  selected,
-  isToday,
-  value,
-  onChange,
-  onOpen,
-}: {
-  date: Date
-  selected: boolean
-  isToday: boolean
-  value: string
-  onChange: (v: string) => void
-  onOpen: () => void
-}) => {
-  const dow = format(date, 'EE', { locale: ru })
-  const day = format(date, 'd')
-
-  return (
-    <div className="day-slot day-slot--right">
-      <button
-        type="button"
-        onClick={onOpen}
-        className={`day-tab day-tab--right ${selected ? 'day-tab--active' : ''} ${isToday ? 'day-tab--today' : ''}`}
-      >
-        <div className="day-tab__dow">{dow}</div>
-        <div className="day-tab__day">{day}</div>
-        <Maximize2 size={14} className="day-tab__icon" />
-      </button>
-
-      <div className="week-summary">
-        <div className="week-summary__label">Итоги недели:</div>
-        <input value={value} onChange={(e) => onChange(e.target.value)} className="week-summary__input" placeholder="коротко…" />
-        <div className="week-summary__lines">
-          {Array.from({ length: 20 }, (_, idx) => (
-            <div key={idx} className="week-summary__line" />
-          ))}
-        </div>
-      </div>
+    <div className={`week-strip ${variant === 'summary' ? 'week-strip--summary' : ''}`}>
+      <div className="week-strip__label">{label}</div>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="week-strip__input"
+        placeholder={placeholder}
+      />
     </div>
   )
 }
