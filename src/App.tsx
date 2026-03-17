@@ -13,6 +13,13 @@ import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Moon, Setti
 
 type PlannerTheme = 'light' | 'dark'
 
+type WeekMeta = {
+  focusLines: [string, string]
+  summaryLines: [string, string, string]
+}
+
+type WeekMetaByWeek = Record<string, WeekMeta>
+
 const storageKey = 'planner:state:v1'
 
 const readPersisted = (): {
@@ -20,12 +27,14 @@ const readPersisted = (): {
   focusByDate: Record<string, string>
   layoutPreset: PlannerLayoutPreset
   theme: PlannerTheme
+  weekMetaByWeek: WeekMetaByWeek
 } => {
   const defaults = {
     linesByDate: {} as Record<string, string[]>,
     focusByDate: {} as Record<string, string>,
     layoutPreset: 'normal' as PlannerLayoutPreset,
     theme: 'light' as PlannerTheme,
+    weekMetaByWeek: {} as WeekMetaByWeek,
   }
 
   try {
@@ -33,6 +42,10 @@ const readPersisted = (): {
     const raw = window.localStorage.getItem(storageKey)
     if (!raw) return defaults
     const parsed = JSON.parse(raw) as Partial<typeof defaults>
+
+    const weekMetaByWeek =
+      parsed.weekMetaByWeek && typeof parsed.weekMetaByWeek === 'object' ? (parsed.weekMetaByWeek as WeekMetaByWeek) : defaults.weekMetaByWeek
+
     return {
       linesByDate: parsed.linesByDate && typeof parsed.linesByDate === 'object' ? parsed.linesByDate : defaults.linesByDate,
       focusByDate: parsed.focusByDate && typeof parsed.focusByDate === 'object' ? parsed.focusByDate : defaults.focusByDate,
@@ -41,6 +54,7 @@ const readPersisted = (): {
           ? parsed.layoutPreset
           : defaults.layoutPreset,
       theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : defaults.theme,
+      weekMetaByWeek,
     }
   } catch {
     return defaults
@@ -57,6 +71,7 @@ function App() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [linesByDate, setLinesByDate] = useState<Record<string, string[]>>(persistedAtLoad.linesByDate)
   const [focusByDate, setFocusByDate] = useState<Record<string, string>>(persistedAtLoad.focusByDate)
+  const [weekMetaByWeek, setWeekMetaByWeek] = useState<WeekMetaByWeek>(persistedAtLoad.weekMetaByWeek)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [layoutPreset, setLayoutPreset] = useState<PlannerLayoutPreset>(persistedAtLoad.layoutPreset)
   const [theme, setTheme] = useState<PlannerTheme>(() => {
@@ -69,6 +84,15 @@ function App() {
   const currentISODate = useMemo(() => format(currentDate, 'yyyy-MM-dd'), [currentDate])
   const emptyLines = useMemo(() => new Array(20).fill(''), [])
   const currentLines = useMemo(() => linesByDate[currentISODate] ?? emptyLines, [currentISODate, emptyLines, linesByDate])
+  const weekKey = useMemo(() => format(weekStart, 'yyyy-MM-dd'), [weekStart])
+  const weekMeta = useMemo<WeekMeta>(() => {
+    return (
+      weekMetaByWeek[weekKey] ?? {
+        focusLines: ['', ''],
+        summaryLines: ['', '', ''],
+      }
+    )
+  }, [weekKey, weekMetaByWeek])
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -80,6 +104,7 @@ function App() {
             focusByDate,
             layoutPreset,
             theme,
+            weekMetaByWeek,
           })
         )
       } catch {
@@ -88,7 +113,7 @@ function App() {
     }, 250)
 
     return () => window.clearTimeout(t)
-  }, [focusByDate, layoutPreset, linesByDate, theme])
+  }, [focusByDate, layoutPreset, linesByDate, theme, weekMetaByWeek])
 
   if (loading) {
     return (
@@ -139,7 +164,7 @@ function App() {
           pageKey={`${view}-${view === 'week' ? weekStart.toISOString() : currentDate.toISOString()}`}
         >
           <div className="book-frame">
-            <div className="book-pages">
+            <div className="book-pages" data-view={view}>
               <div className="planner-toolbar">
                 <div className="planner-toolbar__left">
                   {view === 'day' && (
@@ -210,6 +235,9 @@ function App() {
                   direction={direction}
                   linesByDate={linesByDate}
                   focusByDate={focusByDate}
+                  weekKey={weekKey}
+                  weekMeta={weekMeta}
+                  onWeekMetaChange={(next) => setWeekMetaByWeek((prev) => ({ ...prev, [weekKey]: next }))}
                   onLinesChange={(isoDate, lines) => setLinesByDate((prev) => ({ ...prev, [isoDate]: lines }))}
                   onFocusChange={(isoDate, focus) => setFocusByDate((prev) => ({ ...prev, [isoDate]: focus }))}
                   onOpenDay={(d: Date, dir: number) => {

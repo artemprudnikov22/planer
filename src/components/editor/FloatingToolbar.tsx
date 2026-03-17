@@ -6,8 +6,7 @@ import {
   Underline as UnderlineIcon, 
   Highlighter, 
   Undo2,
-  Redo2,
-  Trash2
+  Redo2
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -58,17 +57,25 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
           <div className="w-[1px] h-4 bg-ink/10 mx-1" />
 
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(253, 230, 138, 0.60)' }).run()}
-            active={editor.isActive('highlight', { color: 'rgba(253, 230, 138, 0.60)' })}
-            className="text-[#F59E0B]"
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(253, 224, 71, 0.85)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(253, 224, 71, 0.85)' })}
+            className="text-[#FDE047]"
           >
             <Highlighter size={16} />
           </ToolbarButton>
 
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(167, 139, 250, 0.35)' }).run()}
-            active={editor.isActive('highlight', { color: 'rgba(167, 139, 250, 0.35)' })}
-            className="text-[#8B5CF6]"
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(34, 211, 238, 0.55)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(34, 211, 238, 0.55)' })}
+            className="text-[#22D3EE]"
+          >
+            <Highlighter size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(167, 139, 250, 0.55)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(167, 139, 250, 0.55)' })}
+            className="text-[#A78BFA]"
           >
             <Highlighter size={16} />
           </ToolbarButton>
@@ -89,13 +96,6 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
         className="text-ink/50 hover:text-ink"
       >
         <Redo2 size={16} />
-      </ToolbarButton>
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-        className="text-red-400 hover:text-red-600"
-      >
-        <Trash2 size={16} />
       </ToolbarButton>
     </div>
   )

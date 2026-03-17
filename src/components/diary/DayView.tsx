@@ -43,7 +43,7 @@ export const DayView = ({ date, lines, onLinesChange }: DayViewProps) => {
               className="flex-1 h-full"
               navId={navId}
               navIndex={idx}
-              showToolbar={false}
+              showToolbar
               mode="minimal"
             />
           </div>

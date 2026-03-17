@@ -3,7 +3,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Highlight from '@tiptap/extension-highlight'
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { FloatingToolbar } from './FloatingToolbar'
 
 interface InlineEditorProps {
@@ -27,10 +27,17 @@ export const InlineEditor = memo(function InlineEditor({
 }: InlineEditorProps) {
   const pendingUpdateRef = useRef<number | null>(null)
   const latestHtmlRef = useRef(content)
+  const latestOnChangeRef = useRef(onChange)
+  useEffect(() => {
+    latestOnChangeRef.current = onChange
+  }, [onChange])
+
+  const enableRich = mode === 'full' || showToolbar
+  const [focused, setFocused] = useState(false)
 
   const editor = useEditor({
     extensions:
-      mode === 'minimal'
+      !enableRich
         ? [StarterKit]
         : [StarterKit, Underline, Highlight.configure({ multicolor: true })],
     content,
@@ -39,12 +46,13 @@ export const InlineEditor = memo(function InlineEditor({
       if (pendingUpdateRef.current) window.clearTimeout(pendingUpdateRef.current)
       pendingUpdateRef.current = window.setTimeout(() => {
         pendingUpdateRef.current = null
-        onChange(latestHtmlRef.current)
+        latestOnChangeRef.current(latestHtmlRef.current)
       }, 70)
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-w-[50px] w-full h-full flex items-center min-h-[40px] cursor-text',
+        class:
+          'focus:outline-none min-w-[50px] w-full min-h-[18px] leading-[18px] cursor-text whitespace-pre-wrap break-words',
       },
       handleDOMEvents: {
         keydown: (_view, event) => {
@@ -112,30 +120,40 @@ export const InlineEditor = memo(function InlineEditor({
         window.clearTimeout(pendingUpdateRef.current)
         pendingUpdateRef.current = null
       }
-      onChange(editor.getHTML())
+      latestOnChangeRef.current(editor.getHTML())
     }
 
+    const handleFocus = () => setFocused(true)
+    const handleBlur = () => setFocused(false)
+
+    editor.on('focus', handleFocus)
+    editor.on('blur', handleBlur)
     editor.on('blur', flush)
     return () => {
+      editor.off('focus', handleFocus)
+      editor.off('blur', handleBlur)
       editor.off('blur', flush)
     }
-  }, [editor, onChange])
+  }, [editor])
 
   return (
     <div
       className={className}
       data-nav-id={navId}
       data-nav-index={navIndex}
-      onPointerDown={() => {
+      onPointerDownCapture={(e) => {
         if (!editor) return
+        if (e.button !== 0) return
         editor.chain().focus().run()
+        requestAnimationFrame(() => {
+          editor.commands.setTextSelection(1)
+        })
       }}
     >
-      {showToolbar && editor && (
+      {showToolbar && editor && focused && (
         <BubbleMenu 
           editor={editor} 
           options={{ placement: 'bottom' }}
-          shouldShow={({ editor }) => editor.isFocused}
           className="z-50"
         >
           <FloatingToolbar editor={editor} />

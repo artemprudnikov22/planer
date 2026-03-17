@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { Maximize2 } from 'lucide-react'
@@ -6,12 +6,20 @@ import { InlineEditor } from '../editor/InlineEditor.tsx'
 
 const toISODate = (d: Date) => format(d, 'yyyy-MM-dd')
 
+type WeekMeta = {
+  focusLines: [string, string]
+  summaryLines: [string, string, string]
+}
+
 interface WeeklyViewProps {
   date: Date
   direction: number
   onOpenDay: (date: Date, direction: number) => void
   linesByDate: Record<string, string[]>
   focusByDate: Record<string, string>
+  weekKey: string
+  weekMeta: WeekMeta
+  onWeekMetaChange: (next: WeekMeta) => void
   onLinesChange: (isoDate: string, lines: string[]) => void
   onFocusChange: (isoDate: string, focus: string) => void
 }
@@ -22,15 +30,15 @@ export const WeeklyView = ({
   onOpenDay,
   linesByDate,
   focusByDate,
+  weekKey,
+  weekMeta,
+  onWeekMetaChange,
   onLinesChange,
   onFocusChange,
 }: WeeklyViewProps) => {
   const weekStart = useMemo(() => startOfWeek(date, { weekStartsOn: 1 }), [date])
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart])
   const [mon, tue, wed, thu, fri, sat, sun] = days
-
-  const [weekFocus, setWeekFocus] = useState('')
-  const [weekSummary, setWeekSummary] = useState('')
   const emptyLines = useMemo(() => new Array(20).fill(''), [])
 
   const ensureDayState = (d: Date) => {
@@ -59,16 +67,42 @@ export const WeeklyView = ({
   const getLines = (d: Date) => linesByDate[toISODate(d)] ?? emptyLines
   const getFocus = (d: Date) => focusByDate[toISODate(d)] ?? ''
 
+  const setWeekFocusLine = (idx: 0 | 1, html: string) => {
+    const nextFocusLines: [string, string] = [...weekMeta.focusLines] as [string, string]
+    nextFocusLines[idx] = html
+    onWeekMetaChange({ ...weekMeta, focusLines: nextFocusLines })
+  }
+
+  const setWeekSummaryLine = (idx: 0 | 1 | 2, html: string) => {
+    const nextSummaryLines: [string, string, string] = [...weekMeta.summaryLines] as [string, string, string]
+    nextSummaryLines[idx] = html
+    onWeekMetaChange({ ...weekMeta, summaryLines: nextSummaryLines })
+  }
+
   return (
     <div className="w-full">
       <div className="weekly-spread weekly-spread--fixed">
         <div className="weekly-page weekly-page--left">
-          <WeekStrip
-            label="Фокус недели:"
-            value={weekFocus}
-            onChange={setWeekFocus}
-            placeholder="главное на этой неделе…"
-          />
+          <WeekStripLines label="Фокус недели:" variant="focus">
+            <InlineEditor
+              content={weekMeta.focusLines[0] ?? ''}
+              onChange={(html) => setWeekFocusLine(0, html)}
+              navId={`week-focus-${weekKey}`}
+              navIndex={0}
+              showToolbar
+              mode="minimal"
+              className="week-strip__line"
+            />
+            <InlineEditor
+              content={weekMeta.focusLines[1] ?? ''}
+              onChange={(html) => setWeekFocusLine(1, html)}
+              navId={`week-focus-${weekKey}`}
+              navIndex={1}
+              showToolbar
+              mode="minimal"
+              className="week-strip__line"
+            />
+          </WeekStripLines>
           <DayCard
             date={mon}
             selected={isSameDay(mon, date)}
@@ -81,6 +115,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(mon, v)}
             onOpen={() => openLeft(mon)}
             tabSide="left"
+            lineCount={20}
           />
           <DayCard
             date={tue}
@@ -94,6 +129,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(tue, v)}
             onOpen={() => openLeft(tue)}
             tabSide="left"
+            lineCount={20}
           />
           <DayCard
             date={wed}
@@ -107,6 +143,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(wed, v)}
             onOpen={() => openLeft(wed)}
             tabSide="left"
+            lineCount={20}
           />
         </div>
 
@@ -127,6 +164,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(thu, v)}
             onOpen={() => openRight(thu)}
             tabSide="right"
+            lineCount={20}
           />
           <DayCard
             date={fri}
@@ -140,6 +178,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(fri, v)}
             onOpen={() => openRight(fri)}
             tabSide="right"
+            lineCount={20}
           />
           <DayCard
             date={sat}
@@ -153,6 +192,7 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(sat, v)}
             onOpen={() => openRight(sat)}
             tabSide="right"
+            lineCount={12}
           />
 
           <DayCard
@@ -167,14 +207,37 @@ export const WeeklyView = ({
             onFocusChange={(v) => updateFocus(sun, v)}
             onOpen={() => openRight(sun)}
             tabSide="right"
+            lineCount={12}
           />
-          <WeekStrip
-            label="Итоги недели:"
-            value={weekSummary}
-            onChange={setWeekSummary}
-            placeholder="коротко по итогам…"
-            variant="summary"
-          />
+          <WeekStripLines label="Итоги недели:" variant="summary">
+            <InlineEditor
+              content={weekMeta.summaryLines[0] ?? ''}
+              onChange={(html) => setWeekSummaryLine(0, html)}
+              navId={`week-summary-${weekKey}`}
+              navIndex={0}
+              showToolbar
+              mode="minimal"
+              className="week-strip__line"
+            />
+            <InlineEditor
+              content={weekMeta.summaryLines[1] ?? ''}
+              onChange={(html) => setWeekSummaryLine(1, html)}
+              navId={`week-summary-${weekKey}`}
+              navIndex={1}
+              showToolbar
+              mode="minimal"
+              className="week-strip__line"
+            />
+            <InlineEditor
+              content={weekMeta.summaryLines[2] ?? ''}
+              onChange={(html) => setWeekSummaryLine(2, html)}
+              navId={`week-summary-${weekKey}`}
+              navIndex={2}
+              showToolbar
+              mode="minimal"
+              className="week-strip__line"
+            />
+          </WeekStripLines>
         </div>
       </div>
     </div>
@@ -189,6 +252,7 @@ interface DayCardProps {
   lines: string[]
   isoDate: string
   tabSide: 'left' | 'right'
+  lineCount: number
   onEnsure: () => void
   onFocusChange: (value: string) => void
   onLineChange: (idx: number, value: string) => void
@@ -203,6 +267,7 @@ const DayCard = ({
   lines,
   isoDate,
   tabSide,
+  lineCount,
   onEnsure,
   onFocusChange,
   onLineChange,
@@ -242,14 +307,14 @@ const DayCard = ({
         </div>
 
         <div className="day-card__lines">
-          {Array.from({ length: 20 }, (_, idx) => (
+          {Array.from({ length: lineCount }, (_, idx) => (
             <div key={idx} className="day-card__line">
               <InlineEditor
                 content={lines[idx] ?? ''}
                 onChange={(html) => onLineChange(idx, html)}
                 navId={`week-${isoDate}`}
                 navIndex={idx}
-                showToolbar={false}
+                showToolbar
                 mode="minimal"
               />
             </div>
@@ -260,28 +325,19 @@ const DayCard = ({
   )
 }
 
-const WeekStrip = ({
+const WeekStripLines = ({
   label,
-  value,
-  onChange,
-  placeholder,
+  children,
   variant,
 }: {
   label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  variant?: 'summary'
+  children: ReactNode
+  variant: 'focus' | 'summary'
 }) => {
   return (
-    <div className={`week-strip ${variant === 'summary' ? 'week-strip--summary' : ''}`}>
+    <div className={`week-strip week-strip--lines ${variant === 'summary' ? 'week-strip--summary' : ''}`}>
       <div className="week-strip__label">{label}</div>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="week-strip__input"
-        placeholder={placeholder}
-      />
+      <div className="week-strip__lines">{children}</div>
     </div>
   )
 }
