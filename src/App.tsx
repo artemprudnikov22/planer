@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { addDays, addWeeks, format, startOfWeek, subDays, subWeeks } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { DayView } from './components/diary/DayView'
@@ -9,7 +9,45 @@ import { SettingsModal, type PlannerLayoutPreset } from './components/layout/Set
 import { WeeklyView } from './components/weekly/WeeklyView.tsx'
 import { useAuth } from './hooks/useAuth'
 import { supabaseConfigured } from './lib/supabase'
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react'
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Moon, Settings, Sun } from 'lucide-react'
+
+type PlannerTheme = 'light' | 'dark'
+
+const storageKey = 'planner:state:v1'
+
+const readPersisted = (): {
+  linesByDate: Record<string, string[]>
+  focusByDate: Record<string, string>
+  layoutPreset: PlannerLayoutPreset
+  theme: PlannerTheme
+} => {
+  const defaults = {
+    linesByDate: {} as Record<string, string[]>,
+    focusByDate: {} as Record<string, string>,
+    layoutPreset: 'normal' as PlannerLayoutPreset,
+    theme: 'light' as PlannerTheme,
+  }
+
+  try {
+    if (typeof window === 'undefined') return defaults
+    const raw = window.localStorage.getItem(storageKey)
+    if (!raw) return defaults
+    const parsed = JSON.parse(raw) as Partial<typeof defaults>
+    return {
+      linesByDate: parsed.linesByDate && typeof parsed.linesByDate === 'object' ? parsed.linesByDate : defaults.linesByDate,
+      focusByDate: parsed.focusByDate && typeof parsed.focusByDate === 'object' ? parsed.focusByDate : defaults.focusByDate,
+      layoutPreset:
+        parsed.layoutPreset === 'compact' || parsed.layoutPreset === 'normal' || parsed.layoutPreset === 'comfort'
+          ? parsed.layoutPreset
+          : defaults.layoutPreset,
+      theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : defaults.theme,
+    }
+  } catch {
+    return defaults
+  }
+}
+
+const persistedAtLoad = readPersisted()
 
 function App() {
   const { user, loading, signOut } = useAuth()
@@ -17,15 +55,40 @@ function App() {
   const [direction, setDirection] = useState(0)
   const [view, setView] = useState<'week' | 'day'>('week')
   const [calendarOpen, setCalendarOpen] = useState(false)
-  const [linesByDate, setLinesByDate] = useState<Record<string, string[]>>({})
-  const [focusByDate, setFocusByDate] = useState<Record<string, string>>({})
+  const [linesByDate, setLinesByDate] = useState<Record<string, string[]>>(persistedAtLoad.linesByDate)
+  const [focusByDate, setFocusByDate] = useState<Record<string, string>>(persistedAtLoad.focusByDate)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [layoutPreset, setLayoutPreset] = useState<PlannerLayoutPreset>('normal')
+  const [layoutPreset, setLayoutPreset] = useState<PlannerLayoutPreset>(persistedAtLoad.layoutPreset)
+  const [theme, setTheme] = useState<PlannerTheme>(() => {
+    if (typeof window === 'undefined') return persistedAtLoad.theme
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
+    return persistedAtLoad.theme ?? (prefersDark ? 'dark' : 'light')
+  })
 
   const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate])
   const currentISODate = useMemo(() => format(currentDate, 'yyyy-MM-dd'), [currentDate])
   const emptyLines = useMemo(() => new Array(20).fill(''), [])
   const currentLines = useMemo(() => linesByDate[currentISODate] ?? emptyLines, [currentISODate, emptyLines, linesByDate])
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            linesByDate,
+            focusByDate,
+            layoutPreset,
+            theme,
+          })
+        )
+      } catch {
+        return
+      }
+    }, 250)
+
+    return () => window.clearTimeout(t)
+  }, [focusByDate, layoutPreset, linesByDate, theme])
 
   if (loading) {
     return (
@@ -66,6 +129,7 @@ function App() {
 
   return (
     <div
+      data-theme={theme}
       className="min-h-screen selection:bg-highlight-yellow text-base"
       style={layoutVars}
     >
@@ -118,6 +182,14 @@ function App() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+                    className="planner-toolbar__btn"
+                    aria-label="Тема"
+                  >
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setSettingsOpen(true)}
                     className="planner-toolbar__btn"
                     aria-label="Настройки"
@@ -166,7 +238,7 @@ function App() {
           setCurrentDate(today)
           setView('week')
         }}
-        className="fixed bottom-6 right-6 bg-ink text-paper px-5 py-3 rounded-full shadow-2xl hover:scale-105 transition-transform font-serif italic text-base z-50"
+        className="planner-fab"
       >
         сегодня
       </button>

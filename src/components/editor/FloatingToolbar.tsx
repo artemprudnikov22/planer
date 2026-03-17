@@ -18,8 +18,11 @@ interface FloatingToolbarProps {
 export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
   if (!editor) return null
 
+  const hasUnderline = editor.extensionManager.extensions.some((ext) => ext.name === 'underline')
+  const hasHighlight = editor.extensionManager.extensions.some((ext) => ext.name === 'highlight')
+
   return (
-    <div className="flex items-center gap-1 bg-white shadow-2xl border border-ink/5 rounded-full p-1.5 backdrop-blur-md animate-in fade-in zoom-in duration-200">
+    <div className="flex items-center gap-1 bg-paper/90 shadow-xl border border-ink/10 rounded-full p-1.5 backdrop-blur-md animate-in fade-in zoom-in duration-200">
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive('bold')}
@@ -34,12 +37,14 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
         <Italic size={16} />
       </ToolbarButton>
 
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        active={editor.isActive('underline')}
-      >
-        <UnderlineIcon size={16} />
-      </ToolbarButton>
+      {hasUnderline && (
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive('underline')}
+        >
+          <UnderlineIcon size={16} />
+        </ToolbarButton>
+      )}
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -48,31 +53,27 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
         <Strikethrough size={16} />
       </ToolbarButton>
 
-      <div className="w-[1px] h-4 bg-ink/10 mx-1" />
+      {hasHighlight && (
+        <>
+          <div className="w-[1px] h-4 bg-ink/10 mx-1" />
 
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(236, 177, 68, 0.35)' }).run()}
-        active={editor.isActive('highlight', { color: 'rgba(236, 177, 68, 0.35)' })}
-        className="text-[#ECB144]"
-      >
-        <Highlighter size={16} />
-      </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(253, 230, 138, 0.60)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(253, 230, 138, 0.60)' })}
+            className="text-[#F59E0B]"
+          >
+            <Highlighter size={16} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(100, 45, 144, 0.22)' }).run()}
-        active={editor.isActive('highlight', { color: 'rgba(100, 45, 144, 0.22)' })}
-        className="text-[#642D90]"
-      >
-        <Highlighter size={16} />
-      </ToolbarButton>
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(219, 234, 254, 0.55)' }).run()}
-        active={editor.isActive('highlight', { color: 'rgba(219, 234, 254, 0.55)' })}
-        className="text-blue-600"
-      >
-        <Highlighter size={16} />
-      </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(167, 139, 250, 0.35)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(167, 139, 250, 0.35)' })}
+            className="text-[#8B5CF6]"
+          >
+            <Highlighter size={16} />
+          </ToolbarButton>
+        </>
+      )}
 
       <div className="w-[1px] h-4 bg-ink/10 mx-1" />
 
@@ -115,7 +116,7 @@ const ToolbarButton = ({ onClick, active, children, className }: ToolbarButtonPr
     }}
     className={`p-2 rounded-full transition-all flex items-center justify-center ${
       active 
-        ? 'bg-ink text-white' 
+        ? 'bg-ink text-paper' 
         : `hover:bg-ink/5 text-ink/60 hover:text-ink ${className || ''}`
     }`}
   >

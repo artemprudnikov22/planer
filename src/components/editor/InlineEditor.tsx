@@ -3,7 +3,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Highlight from '@tiptap/extension-highlight'
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { FloatingToolbar } from './FloatingToolbar'
 
 interface InlineEditorProps {
@@ -16,7 +16,7 @@ interface InlineEditorProps {
   mode?: 'minimal' | 'full'
 }
 
-export const InlineEditor = ({
+export const InlineEditor = memo(function InlineEditor({
   content,
   onChange,
   className,
@@ -24,7 +24,7 @@ export const InlineEditor = ({
   navIndex,
   showToolbar = true,
   mode = 'full',
-}: InlineEditorProps) => {
+}: InlineEditorProps) {
   const pendingUpdateRef = useRef<number | null>(null)
   const latestHtmlRef = useRef(content)
 
@@ -44,7 +44,7 @@ export const InlineEditor = ({
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-w-[50px] w-full h-full flex items-center min-h-[40px]',
+        class: 'focus:outline-none min-w-[50px] w-full h-full flex items-center min-h-[40px] cursor-text',
       },
       handleDOMEvents: {
         keydown: (_view, event) => {
@@ -122,7 +122,15 @@ export const InlineEditor = ({
   }, [editor, onChange])
 
   return (
-    <div className={className} data-nav-id={navId} data-nav-index={navIndex}>
+    <div
+      className={className}
+      data-nav-id={navId}
+      data-nav-index={navIndex}
+      onPointerDown={() => {
+        if (!editor) return
+        editor.chain().focus().run()
+      }}
+    >
       {showToolbar && editor && (
         <BubbleMenu 
           editor={editor} 
@@ -136,4 +144,4 @@ export const InlineEditor = ({
       <EditorContent editor={editor} />
     </div>
   )
-}
+})

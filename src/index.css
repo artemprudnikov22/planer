@@ -1,21 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Kalam:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #F9F7F2;
-  --color-paper-darker: #F2F0E9;
-  --color-ink: #353333;
+  --color-paper: #FAFAFA;
+  --color-paper-darker: #F3F4F6;
+  --color-ink: #0B0D10;
   --color-ink-muted: #6B7280;
-  --color-highlight-yellow: #ECB144;
+  --color-highlight-yellow: #FDE68A;
   --color-highlight-pink: #FCE7F3;
   --color-highlight-blue: #DBEAFE;
   --color-highlight-green: #DCFCE7;
-  --color-brand-purple: #642D90;
-  --color-brand-yellow: #ECB144;
+  --color-brand-purple: #8B5CF6;
+  --color-brand-yellow: #FDE68A;
 
-  --font-handwritten: "Kalam", cursive;
-  --font-serif: "Crimson Pro", serif;
+  --font-serif: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 @layer base {
@@ -25,8 +24,25 @@
     font-family: var(--font-serif);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    background-image: none;
     margin: 0;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  [data-theme="dark"] {
+    --color-paper: #0B0D10;
+    --color-paper-darker: #12161B;
+    --color-ink: #F3F4F6;
+    --color-ink-muted: #9CA3AF;
+    --color-highlight-yellow: #FDE68A;
+    --color-highlight-pink: #FBCFE8;
+    --color-highlight-blue: #93C5FD;
+    --color-highlight-green: #86EFAC;
+    --color-brand-purple: #A78BFA;
+    --color-brand-yellow: #FDE68A;
   }
 
   ::selection {
@@ -39,33 +55,49 @@
   .paper-page {
     position: relative;
     background-color: var(--color-paper);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    border-radius: 0.125rem;
+    box-shadow: none;
+    border-radius: 16px;
     overflow: hidden;
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    background-image: none;
     min-height: calc(100vh - 4rem);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .paper-line {
-    border-bottom: 1px solid #dbeafe; /* blue-100 */
-    height: 2.5rem; /* h-10 */
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    height: 44px;
     display: flex;
     align-items: center;
     padding-left: 1rem;
     padding-right: 1rem;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+    transition: background-color 200ms ease, border-color 200ms ease;
+    cursor: text;
   }
 
   .paper-line:hover {
-    background-color: rgba(219, 234, 254, 0.3); /* blue-50/30 */
+    background-color: rgba(0,0,0,0.03);
+    border-bottom-color: rgba(0,0,0,0.14);
+  }
+
+  [data-theme="dark"] .paper-line {
+    border-bottom-color: rgba(255,255,255,0.10);
+  }
+
+  [data-theme="dark"] .paper-line:hover {
+    background-color: rgba(255,255,255,0.05);
+    border-bottom-color: rgba(255,255,255,0.18);
+  }
+
+  @keyframes ui-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   /* Custom TipTap Styles */
   .ProseMirror {
     outline: none !important;
+    user-select: text;
+    caret-color: var(--color-ink);
   }
 
   .ProseMirror p {
@@ -76,11 +108,9 @@
     position: relative;
     border-radius: 28px;
     padding: 18px;
-    background:
-      linear-gradient(135deg, rgba(14, 14, 18, 0.92), rgba(26, 26, 32, 0.92) 60%, rgba(14, 14, 18, 0.92));
-    box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.28),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
     overflow: hidden;
   }
 
@@ -98,24 +128,41 @@
 
   .book-frame::before {
     left: 10px;
-    background: linear-gradient(to right, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+    background: linear-gradient(to right, rgba(0,0,0,0.06), rgba(0,0,0,0.00));
   }
 
   .book-frame::after {
     right: 10px;
-    background: linear-gradient(to left, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+    background: linear-gradient(to left, rgba(0,0,0,0.06), rgba(0,0,0,0.00));
   }
 
   .book-pages {
     position: relative;
     border-radius: 22px;
     background-color: var(--color-paper);
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    background-image: none;
     border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.22),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.40);
     overflow: hidden;
+  }
+
+  [data-theme="dark"] .book-frame {
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+  }
+
+  [data-theme="dark"] .book-frame::before {
+    background: linear-gradient(to right, rgba(255,255,255,0.10), rgba(255,255,255,0.00));
+  }
+
+  [data-theme="dark"] .book-frame::after {
+    background: linear-gradient(to left, rgba(255,255,255,0.10), rgba(255,255,255,0.00));
+  }
+
+  [data-theme="dark"] .book-pages {
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
 
   .book-pages::before {
@@ -189,6 +236,18 @@
     display: grid;
     place-items: center;
     color: rgba(0,0,0,0.65);
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    will-change: transform;
+  }
+
+  .planner-toolbar__btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.10);
+  }
+
+  .planner-toolbar__btn:active {
+    transform: translateY(0px) scale(0.98);
   }
 
   .planner-toolbar__title {
@@ -201,6 +260,73 @@
     border: 1px solid rgba(0,0,0,0.10);
     background: rgba(255,255,255,0.75);
     white-space: nowrap;
+    transition: background-color 220ms ease, border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  .planner-toolbar__title:hover {
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.10);
+    transform: translateY(-1px);
+  }
+
+  [data-theme="dark"] .planner-toolbar {
+    border-bottom-color: rgba(255,255,255,0.08);
+    background: rgba(13, 16, 20, 0.72);
+  }
+
+  [data-theme="dark"] .planner-toolbar__btn {
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.80);
+  }
+
+  [data-theme="dark"] .planner-toolbar__btn:hover {
+    background: rgba(255,255,255,0.10);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.50);
+  }
+
+  [data-theme="dark"] .planner-toolbar__title {
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.88);
+  }
+
+  [data-theme="dark"] .planner-toolbar__title:hover {
+    background: rgba(255,255,255,0.10);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.50);
+  }
+
+  .planner-fab {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(34, 211, 238, 0.75));
+    color: rgba(255,255,255,0.96);
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    box-shadow: 0 20px 55px rgba(0,0,0,0.16);
+    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+    will-change: transform;
+    z-index: 50;
+  }
+
+  .planner-fab:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 28px 80px rgba(0,0,0,0.20);
+    filter: saturate(1.05);
+  }
+
+  .planner-fab:active {
+    transform: translateY(0px) scale(0.98);
+  }
+
+  [data-theme="dark"] .planner-fab {
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 26px 90px rgba(0,0,0,0.55);
   }
 
   .weekly-spread {
@@ -210,6 +336,7 @@
     gap: 16px;
     align-items: start;
     padding: 12px 12px 28px;
+    animation: ui-enter 260ms ease-out both;
   }
 
   .weekly-spread--fixed {
@@ -223,6 +350,7 @@
     max-width: 980px;
     margin: 0 auto;
     min-height: calc(100vh - 64px - 24px - 36px);
+    animation: ui-enter 260ms ease-out both;
   }
 
   @media (max-width: 980px) {
@@ -343,14 +471,27 @@
   }
 
   .day-card {
-    background: rgba(255,255,255,0.78);
-    border: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.74);
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 18px;
-    box-shadow: 0 18px 35px rgba(0,0,0,0.10);
+    box-shadow: none;
     overflow: hidden;
     height: 240px;
     display: flex;
     flex-direction: column;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    will-change: transform;
+  }
+
+  .day-card:hover {
+    transform: translateY(-2px) scale(1.01);
+    background: rgba(255,255,255,0.86);
+    box-shadow: 0 20px 55px rgba(0,0,0,0.12);
+  }
+
+  .day-card:focus-within {
+    border-color: rgba(139, 92, 246, 0.45);
+    box-shadow: 0 22px 70px rgba(139, 92, 246, 0.12);
   }
 
   .day-card__header {
@@ -397,8 +538,8 @@
 
   .day-card__title {
     font-size: 14px;
-    font-weight: 700;
-    color: rgba(0,0,0,0.65);
+    font-weight: 600;
+    color: rgba(0,0,0,0.62);
     margin-bottom: 0;
     white-space: nowrap;
   }
@@ -419,8 +560,13 @@
     min-width: 0;
     font-size: 14px;
     line-height: 1.2;
-    border-bottom: 1px solid rgba(0,0,0,0.22);
+    border-bottom: 1px solid rgba(0,0,0,0.16);
     padding: 0 0 2px;
+    transition: border-color 220ms ease;
+  }
+
+  .day-card__focus--inline:focus {
+    border-bottom-color: rgba(139, 92, 246, 0.55);
   }
 
   .day-card__lines {
@@ -435,7 +581,8 @@
     width: 100%;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+    cursor: text;
   }
 
   .day-slot--left .day-card__header,
@@ -457,7 +604,38 @@
     font-family: var(--font-serif);
     font-size: var(--week-line-font-size, 13px);
     line-height: 1.05;
-    color: rgba(0,0,0,0.92);
+    color: var(--color-ink);
+  }
+
+  [data-theme="dark"] .day-card {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.10);
+  }
+
+  [data-theme="dark"] .day-card:hover {
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 26px 80px rgba(0,0,0,0.55);
+  }
+
+  [data-theme="dark"] .day-card:focus-within {
+    border-color: rgba(167, 139, 250, 0.55);
+    box-shadow: 0 26px 90px rgba(167, 139, 250, 0.18);
+  }
+
+  [data-theme="dark"] .day-card__title {
+    color: rgba(255,255,255,0.72);
+  }
+
+  [data-theme="dark"] .day-card__focus--inline {
+    border-bottom-color: rgba(255,255,255,0.18);
+  }
+
+  [data-theme="dark"] .day-card__focus--inline:focus {
+    border-bottom-color: rgba(167, 139, 250, 0.65);
+  }
+
+  [data-theme="dark"] .day-card__line {
+    border-bottom-color: rgba(255,255,255,0.10);
   }
 
   .day-tab {
@@ -471,10 +649,18 @@
     padding: 10px 8px;
     border-radius: 14px;
     border: 1px solid rgba(0,0,0,0.10);
-    background: rgba(255,255,255,0.9);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.70);
+    box-shadow: none;
     color: rgba(0,0,0,0.75);
     z-index: 5;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    will-change: transform;
+  }
+
+  .day-tab:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(255,255,255,0.90);
+    box-shadow: 0 18px 44px rgba(0,0,0,0.10);
   }
 
   .day-slot {
@@ -506,13 +692,13 @@
 
   .day-tab--active {
     background: rgba(255,255,255,1);
-    border-color: rgba(100, 45, 144, 0.45);
-    box-shadow: 0 14px 24px rgba(0,0,0,0.14);
+    border-color: rgba(139, 92, 246, 0.55);
+    box-shadow: 0 22px 70px rgba(139, 92, 246, 0.12);
   }
 
   .day-tab--today {
-    background: rgba(236, 62, 62, 0.92);
-    border-color: rgba(236, 62, 62, 0.92);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(34, 211, 238, 0.80));
+    border-color: rgba(139, 92, 246, 0.55);
     color: rgba(255,255,255,0.98);
   }
 
@@ -605,14 +791,17 @@
     bottom: 0;
     width: 62%;
     background-color: var(--color-paper);
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow:
-      0 20px 60px rgba(0,0,0,0.22),
-      inset 0 0 0 1px rgba(255,255,255,0.4);
+    background-image: none;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.10);
     border-radius: 10px;
     pointer-events: none;
     will-change: transform, opacity;
+  }
+
+  [data-theme="dark"] .flip-sheet {
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: 0 26px 90px rgba(0,0,0,0.55);
   }
 
 
@@ -743,6 +932,20 @@
 
   .month-grid__dot--selected {
     background: rgba(0,0,0,0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weekly-spread,
+  .daily-sheet {
+    animation: none;
+  }
+
+  .planner-toolbar__btn,
+  .planner-toolbar__title,
+  .planner-fab {
+    transition: none;
+    transform: none;
   }
 }
 
