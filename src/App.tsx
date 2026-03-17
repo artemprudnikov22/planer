@@ -7,9 +7,11 @@ import { Auth } from './components/layout/Auth'
 import { CalendarModal } from './components/calendar/CalendarModal'
 import { SettingsModal, type PlannerLayoutPreset } from './components/layout/SettingsModal'
 import { WeeklyView } from './components/weekly/WeeklyView.tsx'
+import { StickyNotesLayer } from './components/sticky/StickyNotesLayer'
 import { useAuth } from './hooks/useAuth'
-import { supabaseConfigured } from './lib/supabase'
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Moon, Settings, Sun } from 'lucide-react'
+import { useStickyNotes } from './hooks/useStickyNotes'
+import { supabase, supabaseConfigured } from './lib/supabase'
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Moon, Settings, StickyNote, Sun } from 'lucide-react'
 
 type PlannerTheme = 'light' | 'dark'
 
@@ -65,6 +67,7 @@ const persistedAtLoad = readPersisted()
 
 function App() {
   const { user, loading, signOut } = useAuth()
+  const userId = user?.id ?? null
   const [currentDate, setCurrentDate] = useState(new Date())
   const [direction, setDirection] = useState(0)
   const [view, setView] = useState<'week' | 'day'>('week')
@@ -94,6 +97,49 @@ function App() {
     )
   }, [weekKey, weekMetaByWeek])
 
+  const { notes, createNote, deleteNote, upsertNote } = useStickyNotes(userId)
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!supabaseConfigured || !userId) return
+
+    let cancelled = false
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('planner_state')
+        .select('data')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (cancelled) return
+
+      if (error || !data?.data) {
+        setLoadedUserId(userId)
+        return
+      }
+
+      const d = data.data as Partial<{
+        linesByDate: Record<string, string[]>
+        focusByDate: Record<string, string>
+        weekMetaByWeek: WeekMetaByWeek
+        layoutPreset: PlannerLayoutPreset
+        theme: PlannerTheme
+      }>
+
+      if (d.linesByDate && typeof d.linesByDate === 'object') setLinesByDate(d.linesByDate)
+      if (d.focusByDate && typeof d.focusByDate === 'object') setFocusByDate(d.focusByDate)
+      if (d.weekMetaByWeek && typeof d.weekMetaByWeek === 'object') setWeekMetaByWeek(d.weekMetaByWeek)
+      if (d.layoutPreset === 'compact' || d.layoutPreset === 'normal' || d.layoutPreset === 'comfort') setLayoutPreset(d.layoutPreset)
+      if (d.theme === 'dark' || d.theme === 'light') setTheme(d.theme)
+
+      setLoadedUserId(userId)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
+
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
@@ -114,6 +160,30 @@ function App() {
 
     return () => window.clearTimeout(t)
   }, [focusByDate, layoutPreset, linesByDate, theme, weekMetaByWeek])
+
+  useEffect(() => {
+    if (!supabaseConfigured || !userId) return
+    if (loadedUserId !== userId) return
+    const t = window.setTimeout(async () => {
+      try {
+        await supabase.from('planner_state').upsert({
+          user_id: userId,
+          data: {
+            linesByDate,
+            focusByDate,
+            layoutPreset,
+            theme,
+            weekMetaByWeek,
+          },
+          updated_at: new Date().toISOString(),
+        })
+      } catch {
+        return
+      }
+    }, 650)
+
+    return () => window.clearTimeout(t)
+  }, [focusByDate, layoutPreset, linesByDate, loadedUserId, theme, userId, weekMetaByWeek])
 
   if (loading) {
     return (
@@ -188,6 +258,16 @@ function App() {
                   >
                     <CalendarDays size={18} />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void createNote()
+                    }}
+                    className="planner-toolbar__btn"
+                    aria-label="Sticky note"
+                  >
+                    <StickyNote size={18} />
+                  </button>
                 </div>
 
                 <button
@@ -254,6 +334,8 @@ function App() {
                   onLinesChange={(lines) => setLinesByDate((prev) => ({ ...prev, [currentISODate]: lines }))}
                 />
               )}
+
+              <StickyNotesLayer notes={notes} onChange={upsertNote} onDelete={deleteNote} />
             </div>
           </div>
         </PageFlip>

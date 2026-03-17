@@ -147,8 +147,8 @@ export const WeeklyView = ({
           />
         </div>
 
-        <div className="weekly-spiral" aria-hidden="true">
-          <div className="weekly-spiral__inner" />
+        <div className="wire-binding" aria-hidden="true">
+          <div className="wire-binding__core" />
         </div>
 
         <div className="weekly-page weekly-page--right">

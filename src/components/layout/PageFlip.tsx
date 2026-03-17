@@ -39,18 +39,22 @@ export const PageFlip = ({ children, direction, pageKey }: PageFlipProps) => {
             initial={{
               opacity: 0.45,
               rotateY: 0,
+              rotateZ: direction > 0 ? 6 : -6,
+              y: 10,
               x: 0,
               left: direction > 0 ? 'auto' : 0,
               right: direction > 0 ? 0 : 'auto',
-              transformOrigin: direction > 0 ? '0% 50%' : '100% 50%',
+              transformOrigin: direction > 0 ? '0% 0%' : '100% 0%',
             }}
             animate={{
               opacity: 0,
               rotateY: direction > 0 ? -150 : 150,
-              x: direction > 0 ? -80 : 80,
+              rotateZ: direction > 0 ? -14 : 14,
+              y: -8,
+              x: direction > 0 ? -96 : 96,
             }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.38, ease: 'easeInOut' }}
+            transition={{ duration: 0.34, ease: 'easeInOut' }}
           />
         )}
       </AnimatePresence>
