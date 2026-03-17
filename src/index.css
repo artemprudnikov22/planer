@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap');
 
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
 
 @theme {
   --color-paper: #F9F7F2;
@@ -324,11 +325,12 @@
   }
 
   .planner-toolbar__title {
-    font-family: var(--font-serif);
-    font-weight: 800;
-    font-size: 16px;
+    font-family: "Playfair Display", var(--font-serif);
+    font-weight: 700;
+    font-style: italic;
+    font-size: 18px;
     color: rgba(100, 45, 144, 0.98);
-    padding: 7px 12px;
+    padding: 8px 12px;
     border-radius: 999px;
     border: 1px solid rgba(0,0,0,0.12);
     background: rgba(236, 177, 68, 0.92);
@@ -619,7 +621,7 @@
     border: 1px solid rgba(0,0,0,0.06);
     border-radius: 18px;
     box-shadow: 0 18px 35px rgba(0,0,0,0.10);
-    overflow: hidden;
+    overflow: visible;
     padding: 12px 18px;
     display: flex;
     align-items: center;
@@ -842,8 +844,8 @@
     align-items: flex-start;
     border-bottom: 1px solid rgba(0,0,0,0.10);
     cursor: text;
-    padding: 4px 0;
-    min-height: 22px;
+    padding: 3px 0;
+    min-height: 18px;
     min-width: 0;
   }
 
@@ -973,6 +975,9 @@
 
   .day-tab--today .day-tab__dow {
     opacity: 0.9;
+    font-family: "Playfair Display", var(--font-serif);
+    font-style: italic;
+    letter-spacing: 0.3px;
   }
 
   .day-tab--today .day-tab__icon {

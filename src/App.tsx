@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { format, startOfWeek } from 'date-fns'
+import { addDays, addWeeks, format, startOfWeek, subDays, subWeeks } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { DayView } from './components/diary/DayView'
 import { PageFlip } from './components/layout/PageFlip'
@@ -11,7 +11,7 @@ import { StickyNotesLayer } from './components/sticky/StickyNotesLayer'
 import { useAuth } from './hooks/useAuth'
 import { useStickyNotes } from './hooks/useStickyNotes'
 import { supabase, supabaseConfigured } from './lib/supabase'
-import { ArrowLeft, CalendarDays, LogOut, Moon, Settings, StickyNote, Sun } from 'lucide-react'
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, LogOut, Settings, StickyNote } from 'lucide-react'
 
 type PlannerTheme = 'light' | 'dark'
 
@@ -77,11 +77,7 @@ function App() {
   const [weekMetaByWeek, setWeekMetaByWeek] = useState<WeekMetaByWeek>(persistedAtLoad.weekMetaByWeek)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [layoutPreset, setLayoutPreset] = useState<PlannerLayoutPreset>(persistedAtLoad.layoutPreset)
-  const [theme, setTheme] = useState<PlannerTheme>(() => {
-    if (typeof window === 'undefined') return persistedAtLoad.theme
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
-    return persistedAtLoad.theme ?? (prefersDark ? 'dark' : 'light')
-  })
+  const [theme, setTheme] = useState<PlannerTheme>('light')
 
   const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate])
   const currentISODate = useMemo(() => format(currentDate, 'yyyy-MM-dd'), [currentDate])
@@ -202,9 +198,29 @@ function App() {
       layoutPreset === 'compact' ? '12px' : layoutPreset === 'comfort' ? '14px' : '13px',
   }
 
+  const goPrev = () => {
+    if (view === 'week') {
+      setDirection(-1)
+      setCurrentDate((d) => subWeeks(d, 1))
+      return
+    }
+    setDirection(-1)
+    setCurrentDate((d) => subDays(d, 1))
+  }
+
+  const goNext = () => {
+    if (view === 'week') {
+      setDirection(1)
+      setCurrentDate((d) => addWeeks(d, 1))
+      return
+    }
+    setDirection(1)
+    setCurrentDate((d) => addDays(d, 1))
+  }
+
   return (
     <div
-      data-theme={theme}
+      data-theme="light"
       className="min-h-screen selection:bg-highlight-yellow text-base"
       style={layoutVars}
     >
@@ -259,13 +275,11 @@ function App() {
                 </button>
 
                 <div className="planner-toolbar__right">
-                  <button
-                    type="button"
-                    onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-                    className="planner-toolbar__btn"
-                    aria-label="Тема"
-                  >
-                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  <button type="button" onClick={goPrev} className="planner-toolbar__btn" aria-label="Предыдущая">
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button type="button" onClick={goNext} className="planner-toolbar__btn" aria-label="Следующая">
+                    <ChevronRight size={16} />
                   </button>
                   <button
                     type="button"

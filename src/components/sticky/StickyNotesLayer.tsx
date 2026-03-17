@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { X } from 'lucide-react'
 import { useMemo, useRef } from 'react'
 import type { StickyNoteModel } from '../../hooks/useStickyNotes'
 
@@ -35,16 +34,21 @@ export const StickyNotesLayer = ({
           initial={false}
           animate={{ x: note.x, y: note.y, rotate: tiltForId(note.id) }}
           onDragEnd={(_e, info) => {
-            onChange({ ...note, x: info.point.x, y: info.point.y })
+            const host = constraintsRef.current
+            if (!host) return
+            const rect = host.getBoundingClientRect()
+            const x = info.point.x - rect.left
+            const y = info.point.y - rect.top
+            onChange({ ...note, x, y })
           }}
         >
-          <button type="button" className="sticky-note__close" onClick={() => onDelete(note.id)} aria-label="Remove note">
-            <X size={14} />
+          <button type="button" className="sticky-note__close" onClick={() => onDelete(note.id)} aria-label="Меню стикера">
+            <span style={{fontWeight:700}}>…</span>
           </button>
           <textarea
             value={note.content}
             onChange={(e) => onChange({ ...note, content: e.target.value })}
-            placeholder="Note…"
+            placeholder="Стикер…"
             className="sticky-note__textarea"
           />
         </motion.div>

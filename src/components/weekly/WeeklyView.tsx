@@ -297,11 +297,14 @@ const DayCard = ({
         <div className="day-card__header">
           <div className="day-card__headerRow">
             <div className="day-card__title">Фокус дня:</div>
-            <input
-              value={focus}
-              onChange={(e) => onFocusChange(e.target.value)}
-              className="day-card__focus day-card__focus--inline"
-              placeholder="главное…"
+            <InlineEditor
+              content={focus}
+              onChange={(html) => onFocusChange(html)}
+              navId={`focus-${isoDate}`}
+              navIndex={0}
+              showToolbar
+              mode="minimal"
+              className="day-card__focus"
             />
           </div>
         </div>
