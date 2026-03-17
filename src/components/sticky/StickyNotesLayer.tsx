@@ -3,6 +3,13 @@ import { X } from 'lucide-react'
 import { useMemo, useRef } from 'react'
 import type { StickyNoteModel } from '../../hooks/useStickyNotes'
 
+const tiltForId = (id: string) => {
+  let h = 0
+  for (let i = 0; i < id.length; i += 1) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  const v = (h % 401) / 100 - 2
+  return Math.max(-2, Math.min(2, v))
+}
+
 export const StickyNotesLayer = ({
   notes,
   onChange,
@@ -26,7 +33,7 @@ export const StickyNotesLayer = ({
           dragElastic={0.08}
           dragConstraints={constraintsRef}
           initial={false}
-          animate={{ x: note.x, y: note.y }}
+          animate={{ x: note.x, y: note.y, rotate: tiltForId(note.id) }}
           onDragEnd={(_e, info) => {
             onChange({ ...note, x: info.point.x, y: info.point.y })
           }}
@@ -45,4 +52,3 @@ export const StickyNotesLayer = ({
     </div>
   )
 }
-

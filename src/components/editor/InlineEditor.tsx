@@ -52,7 +52,7 @@ export const InlineEditor = memo(function InlineEditor({
     editorProps: {
       attributes: {
         class:
-          'focus:outline-none min-w-[50px] w-full min-h-[18px] leading-[18px] cursor-text whitespace-pre-wrap break-words',
+          'focus:outline-none min-w-0 w-full min-h-[18px] leading-[18px] cursor-text whitespace-pre-wrap break-words',
       },
       handleDOMEvents: {
         keydown: (_view, event) => {
@@ -144,6 +144,7 @@ export const InlineEditor = memo(function InlineEditor({
       onPointerDownCapture={(e) => {
         if (!editor) return
         if (e.button !== 0) return
+        e.preventDefault()
         editor.chain().focus().run()
         requestAnimationFrame(() => {
           editor.commands.setTextSelection(1)

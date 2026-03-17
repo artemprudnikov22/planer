@@ -4,9 +4,7 @@ import {
   Italic, 
   Strikethrough,
   Underline as UnderlineIcon, 
-  Highlighter, 
-  Undo2,
-  Redo2
+  Highlighter
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -21,19 +19,19 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
   const hasHighlight = editor.extensionManager.extensions.some((ext) => ext.name === 'highlight')
 
   return (
-    <div className="flex items-center gap-1 bg-paper/90 shadow-xl border border-ink/10 rounded-full p-1.5 backdrop-blur-md animate-in fade-in zoom-in duration-200">
+    <div className="flex items-center gap-0.5 bg-paper/90 shadow-xl border border-ink/10 rounded-full p-1 backdrop-blur-md animate-in fade-in zoom-in duration-150">
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive('bold')}
       >
-        <Bold size={16} />
+        <Bold size={14} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         active={editor.isActive('italic')}
       >
-        <Italic size={16} />
+        <Italic size={14} />
       </ToolbarButton>
 
       {hasUnderline && (
@@ -41,15 +39,12 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           active={editor.isActive('underline')}
         >
-          <UnderlineIcon size={16} />
+          <UnderlineIcon size={14} />
         </ToolbarButton>
       )}
 
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        active={editor.isActive('strike')}
-      >
-        <Strikethrough size={16} />
+      <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}>
+        <Strikethrough size={14} />
       </ToolbarButton>
 
       {hasHighlight && (
@@ -57,46 +52,31 @@ export const FloatingToolbar = ({ editor }: FloatingToolbarProps) => {
           <div className="w-[1px] h-4 bg-ink/10 mx-1" />
 
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(253, 224, 71, 0.85)' }).run()}
-            active={editor.isActive('highlight', { color: 'rgba(253, 224, 71, 0.85)' })}
-            className="text-[#FDE047]"
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(236, 177, 68, 0.55)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(236, 177, 68, 0.55)' })}
+            className="text-[#ECB144]"
           >
-            <Highlighter size={16} />
+            <Highlighter size={14} />
           </ToolbarButton>
 
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(34, 211, 238, 0.55)' }).run()}
-            active={editor.isActive('highlight', { color: 'rgba(34, 211, 238, 0.55)' })}
-            className="text-[#22D3EE]"
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(100, 45, 144, 0.42)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(100, 45, 144, 0.42)' })}
+            className="text-[#642D90]"
           >
-            <Highlighter size={16} />
+            <Highlighter size={14} />
           </ToolbarButton>
 
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(167, 139, 250, 0.55)' }).run()}
-            active={editor.isActive('highlight', { color: 'rgba(167, 139, 250, 0.55)' })}
-            className="text-[#A78BFA]"
+            onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgba(239, 68, 68, 0.42)' }).run()}
+            active={editor.isActive('highlight', { color: 'rgba(239, 68, 68, 0.42)' })}
+            className="text-[#EF4444]"
           >
-            <Highlighter size={16} />
+            <Highlighter size={14} />
           </ToolbarButton>
         </>
       )}
 
-      <div className="w-[1px] h-4 bg-ink/10 mx-1" />
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().undo().run()}
-        className="text-ink/50 hover:text-ink"
-      >
-        <Undo2 size={16} />
-      </ToolbarButton>
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().redo().run()}
-        className="text-ink/50 hover:text-ink"
-      >
-        <Redo2 size={16} />
-      </ToolbarButton>
     </div>
   )
 }
@@ -114,7 +94,7 @@ const ToolbarButton = ({ onClick, active, children, className }: ToolbarButtonPr
       e.preventDefault()
       onClick()
     }}
-    className={`p-2 rounded-full transition-all flex items-center justify-center ${
+    className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
       active 
         ? 'bg-ink text-paper' 
         : `hover:bg-ink/5 text-ink/60 hover:text-ink ${className || ''}`

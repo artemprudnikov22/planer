@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { Children, useMemo, type ReactNode } from 'react'
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { Maximize2 } from 'lucide-react'
@@ -147,8 +147,8 @@ export const WeeklyView = ({
           />
         </div>
 
-        <div className="wire-binding" aria-hidden="true">
-          <div className="wire-binding__core" />
+        <div className="ribbon-bookmark" aria-hidden="true">
+          <div className="ribbon-bookmark__tail" />
         </div>
 
         <div className="weekly-page weekly-page--right">
@@ -334,10 +334,14 @@ const WeekStripLines = ({
   children: ReactNode
   variant: 'focus' | 'summary'
 }) => {
+  const lines = Children.toArray(children)
   return (
     <div className={`week-strip week-strip--lines ${variant === 'summary' ? 'week-strip--summary' : ''}`}>
-      <div className="week-strip__label">{label}</div>
-      <div className="week-strip__lines">{children}</div>
+      <div className="week-strip__grid">
+        <div className="week-strip__label">{label}</div>
+        <div className="week-strip__first">{lines[0] ?? null}</div>
+        <div className="week-strip__rest">{lines.slice(1)}</div>
+      </div>
     </div>
   )
 }
